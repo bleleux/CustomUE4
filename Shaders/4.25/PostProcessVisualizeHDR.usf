@@ -266,7 +266,7 @@ void MainPS(noperspective float4 UVAndScreenPos : TEXCOORD0, float4 SvPosition :
 			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _X_);
 
 			TopLeft = OutputViewportCenter + int2(11, 33);
-			const float EyeAdaptationEV100 = log2((LuminanceAvg/0.18) / EyeAdaptation_LuminanceMax);
+			const float EyeAdaptationEV100 = log2(MaxIlluminance / 2.5);
 			PrintMediumFloatWithSign(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, EyeAdaptationEV100);
 
 			// EV100 text
