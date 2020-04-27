@@ -217,11 +217,15 @@ void MainPS(noperspective float4 UVAndScreenPos : TEXCOORD0, float4 SvPosition :
 		#if USE_PREEXPOSURE
 			LuminanceAvg *= View.OneOverPreExposure;
 		#endif
+
+		// Set text color based on scene luminance
+		float4 textColor = all(LuminanceAvg < float3(300, 300, 300)) ? float4(1.0, 1.0, 1.0, 1.0) : float4(0.0, 0.0, 0.0, 1.0);
+
 			if (PixelDx < MeterSize && PixelDy < MeterSize)
 			{
 				if (PixelDx == MeterSize-1 || PixelDy == MeterSize-1)
 				{
-					OutColor = float4(1.0, 1.0, 1.0, 1.0); // White border
+					OutColor = textColor; // White border
 				}
 				else
 				{
@@ -240,42 +244,42 @@ void MainPS(noperspective float4 UVAndScreenPos : TEXCOORD0, float4 SvPosition :
 			int2 TopLeft = OutputViewportCenter + int2(11, 11);
 			if (MaxLuminance < 1000.0f)
 			{
-				PrintFloat(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, MaxLuminance);
+				PrintFloat(PixelPos, OutColor.xyz, textColor, TopLeft, MaxLuminance);
 			}
 			else
 			{
-				PrintFloatNoFractionLarge(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, MaxLuminance);
+				PrintFloatNoFractionLarge(PixelPos, OutColor.xyz, textColor, TopLeft, MaxLuminance);
 			}
 			TopLeft.x += 60;
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _N_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _I_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _T_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _N_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _I_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _T_);
 			// Illuminance
 			TopLeft = OutputViewportCenter + int2(11, 22);
 			if (MaxIlluminance < 1000.0f)
 			{
-				PrintFloat(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, MaxIlluminance);
+				PrintFloat(PixelPos, OutColor.xyz, textColor, TopLeft, MaxIlluminance);
 			}
 			else
 			{
-				PrintFloatNoFractionLarge(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, MaxIlluminance);
+				PrintFloatNoFractionLarge(PixelPos, OutColor.xyz, textColor, TopLeft, MaxIlluminance);
 			}
 			TopLeft.x += 60;
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _L_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _U_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _X_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _L_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _U_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _X_);
 
 			TopLeft = OutputViewportCenter + int2(11, 33);
 			const float EyeAdaptationEV100 = log2(MaxIlluminance / 2.5);
-			PrintMediumFloatWithSign(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, EyeAdaptationEV100);
+			PrintMediumFloatWithSign(PixelPos, OutColor.xyz, textColor, TopLeft, EyeAdaptationEV100);
 
 			// EV100 text
 			TopLeft.x += 60;
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _E_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _V_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _1_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _0_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _0_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _E_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _V_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _1_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _0_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _0_);
 
 			return;
 		}
