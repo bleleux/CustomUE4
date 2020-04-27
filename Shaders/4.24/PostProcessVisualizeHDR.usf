@@ -110,6 +110,51 @@ float3 Colorize(float x)
 	return lerp(Middle, ColdHeat, abs(0.5f - x) * 2);
 }
 
+void PrintMediumFloatWithSign(int2 PixelPos, inout float3 OutColor, float3 FontColor, int2 LeftTop, float Number)
+{
+	int2 Cursor = LeftTop;
+
+	bool bHasSign = Number < 0;
+
+	// Minus Sign
+	Number = abs(Number) + 0.005; // Round up first digit
+
+	bool bIsGreater10 = Number >= 10;
+
+	FLATTEN
+	if (bHasSign && bIsGreater10)
+	{
+		PrintCharacter(PixelPos, OutColor, FontColor, Cursor, _MINUS_);
+		PrintCharacter(PixelPos, OutColor, FontColor, Cursor, ExtractDigitFromFloat(Number, 10));
+		Number = abs(Number);
+	}
+	else if (bIsGreater10)
+	{
+		Cursor.x += 8;
+		PrintCharacter(PixelPos, OutColor, FontColor, Cursor, ExtractDigitFromFloat(Number, 10));
+	}
+	else if (bHasSign)
+	{
+		Cursor.x += 8;
+		PrintCharacter(PixelPos, OutColor, FontColor, Cursor, _MINUS_);
+	}
+	else
+	{
+		Cursor.x += 2*8;
+	}
+
+	// we always print this character, so no ifs needed
+	PrintCharacter(PixelPos, OutColor, FontColor, Cursor, ExtractDigitFromFloat(Number, 1));
+	// period
+	PrintCharacter(PixelPos, OutColor, FontColor, Cursor, _DOT_);
+	// after period
+	PrintCharacter(PixelPos, OutColor, FontColor, Cursor, ExtractDigitFromFloat(Number, 0.1));
+	// after period
+	PrintCharacter(PixelPos, OutColor, FontColor, Cursor, ExtractDigitFromFloat(Number, 0.01));
+	// after period
+	PrintCharacter(PixelPos, OutColor, FontColor, Cursor, ExtractDigitFromFloat(Number, 0.001));
+}
+
 //
 void MainPS(noperspective float4 UVAndScreenPos : TEXCOORD0, float4 SvPosition : SV_POSITION, out float4 OutColor : SV_Target0)
 {
@@ -125,11 +170,13 @@ void MainPS(noperspective float4 UVAndScreenPos : TEXCOORD0, float4 SvPosition :
 
 	float2 UVViewportCenter = (Input_UVViewportMin + Input_UVViewportSize / 2);
 
+
+
 	// Luminance meter at the center of the screen
 	{
 		const float PixelDx = abs(PixelPos.x - OutputViewportCenter.x);
 		const float PixelDy = abs(PixelPos.y - OutputViewportCenter.y);
-		if (PixelDx < 130 && PixelDy < 40)
+		if (PixelDx < 110 && PixelDy < 40)
 		{
 			float3 LuminanceAvg = 0.0f;
 			float3 SceneColorAvg = 0.0f;
@@ -150,11 +197,15 @@ void MainPS(noperspective float4 UVAndScreenPos : TEXCOORD0, float4 SvPosition :
 		#if USE_PREEXPOSURE
 			LuminanceAvg *= View.OneOverPreExposure;
 		#endif
+
+		// Set text color based on scene luminance
+		float4 textColor = all(LuminanceAvg < float3(300, 300, 300)) ? float4(1.0, 1.0, 1.0, 1.0) : float4(0.0, 0.0, 0.0, 1.0);
+
 			if (PixelDx < MeterSize && PixelDy < MeterSize)
 			{
 				if (PixelDx == MeterSize-1 || PixelDy == MeterSize-1)
 				{
-					OutColor = float4(1.0, 1.0, 1.0, 1.0); // White border
+					OutColor = textColor; // White border
 				}
 				else
 				{
@@ -173,54 +224,43 @@ void MainPS(noperspective float4 UVAndScreenPos : TEXCOORD0, float4 SvPosition :
 			int2 TopLeft = OutputViewportCenter + int2(11, 11);
 			if (MaxLuminance < 1000.0f)
 			{
-				PrintFloat(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, MaxLuminance);
+				PrintFloat(PixelPos, OutColor.xyz, textColor, TopLeft, MaxLuminance);
 			}
 			else
 			{
-				PrintFloatNoFractionLarge(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, MaxLuminance);
+				PrintFloatNoFractionLarge(PixelPos, OutColor.xyz, textColor, TopLeft, MaxLuminance);
 			}
 			TopLeft.x += 60;
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _N_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _I_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _T_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _N_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _I_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _T_);
 			// Illuminance
 			TopLeft = OutputViewportCenter + int2(11, 22);
 			if (MaxIlluminance < 1000.0f)
 			{
-				PrintFloat(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, MaxIlluminance);
+				PrintFloat(PixelPos, OutColor.xyz, textColor, TopLeft, MaxIlluminance);
 			}
 			else
 			{
-				PrintFloatNoFractionLarge(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, MaxIlluminance);
+				PrintFloatNoFractionLarge(PixelPos, OutColor.xyz, textColor, TopLeft, MaxIlluminance);
 			}
 			TopLeft.x += 60;
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _L_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _U_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _X_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _L_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _U_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _X_);
 
-			// Display EV(positive only) of measured average illuminance. Negative EVs are uncommon in nature, except for specific cases of astrophotography
-			// https://en.wikipedia.org/wiki/Exposure_value
-			// E = illuminance, S = ISO, C = calibration constant
-			// EV = log2(E * S / C)
-			//
-			// or
-			//
-			// EV = log2(E * 100 / 250), where 100 is a standardized ISO when referring to EV and 250 is a standardized constant for flat sensor light meters. Hemispherical 
-			// opens up other brand-dependent constants, but even Sekonic's own EV chart uses 250 https://www.sekonic.com/united-states/support/evluxfootcandleconversionchart.aspx
-			//
-			// EV = log2(illuminance / 2.5)
-			//
 			float SuggestedEV = log2(MaxIlluminance/2.5);
 			TopLeft = OutputViewportCenter + int2(11, 33);
-			PrintFloat(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, SuggestedEV);
+			PrintMediumFloatWithSign(PixelPos, OutColor.xyz, textColor, TopLeft, SuggestedEV);
 
 			// EV100 text
 			TopLeft.x += 60;
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _E_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _V_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _1_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _0_);
-			PrintCharacter(PixelPos, OutColor.xyz, float3(1, 1, 1), TopLeft, _0_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _E_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _V_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _1_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _0_);
+			PrintCharacter(PixelPos, OutColor.xyz, textColor, TopLeft, _0_);
+
 
 			return;
 		}
