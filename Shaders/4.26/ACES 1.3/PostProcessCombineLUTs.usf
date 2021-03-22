@@ -277,11 +277,11 @@ float4 CombineLUTsCommon(float2 InUV, uint InLayerIndex)
 	// Expand bright saturated colors outside the sRGB gamut to fake wide gamut rendering.
     if (!bUseMobileTonemapper)
 	{
-		float  LumaAP1 = dot( ColorAP1, AP1_RGB2Y );
-		float3 ChromaAP1 = ColorAP1 / LumaAP1;
+		//float  LumaAP1 = dot( ColorAP1, AP1_RGB2Y );
+		//float3 ChromaAP1 = ColorAP1 / LumaAP1;
 
-		float ChromaDistSqr = dot( ChromaAP1 - 1, ChromaAP1 - 1 );
-		float ExpandAmount = ( 1 - exp2( -4 * ChromaDistSqr ) ) * ( 1 - exp2( -4 * ExpandGamut * LumaAP1*LumaAP1 ) );
+		//float ChromaDistSqr = dot( ChromaAP1 - 1, ChromaAP1 - 1 );
+		//float ExpandAmount = ( 1 - exp2( -4 * ChromaDistSqr ) ) * ( 1 - exp2( -4 * ExpandGamut * LumaAP1*LumaAP1 ) );
 
 		// Bizarre matrix but this expands sRGB to between P3 and AP1
 		// CIE 1931 chromaticities:	x		y
@@ -296,11 +296,11 @@ float4 CombineLUTsCommon(float2 InUV, uint InLayerIndex)
 			-0.0023439,  0.0361834,  1.0552183,
 		};
 
-		const float3x3 Wide_2_AP1 = mul( XYZ_2_AP1_MAT, Wide_2_XYZ_MAT );
-		const float3x3 ExpandMat = mul( Wide_2_AP1, AP1_2_sRGB );
+		//const float3x3 Wide_2_AP1 = mul( XYZ_2_AP1_MAT, Wide_2_XYZ_MAT );
+		//const float3x3 ExpandMat = mul( Wide_2_AP1, AP1_2_sRGB );
 
-		float3 ColorExpand = mul( ExpandMat, ColorAP1 );
-		ColorAP1 = lerp( ColorAP1, ColorExpand, ExpandAmount );
+		//float3 ColorExpand = mul( ExpandMat, ColorAP1 );
+		//ColorAP1 = lerp( ColorAP1, ColorExpand, ExpandAmount );
 	}
 
 	ColorAP1 = ColorCorrectAll( ColorAP1 );
